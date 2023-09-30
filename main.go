@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/yadneshk/fin_tracker/read_reports"
 )
 
 func main() {
@@ -11,5 +12,13 @@ func main() {
 	flag.Parse()
 	fmt.Println("filepath : ", *file_path)
 	fmt.Println("filetype : ", *file_type)
+
+	read_pdf.ReadPdf(*file_path)
+	switch *file_type {
+	case "pdf":
+		fmt.Println("pdf type")
+	default:
+		fmt.Println("invalid file type")
+	}
 
 }

@@ -1,4 +1,4 @@
-module fin_tracker
+module github.com/yadneshk/fin_tracker
 
 go 1.21.1
 

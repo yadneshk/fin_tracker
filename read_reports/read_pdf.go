@@ -5,7 +5,7 @@ import (
 	"github.com/ledongthuc/pdf"
 )
 
-func readPdf(path string) (string, error) {
+func ReadPdf(path string) (string, error) {
 	f, r, err := pdf.Open(path)
 	defer func() {
 		_ = f.Close()

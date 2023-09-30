@@ -15,7 +15,9 @@ func main() {
 
 	switch *file_type {
 	case "pdf":
-		read_pdf.ReadPdf(*file_path)
+		read_reports.ReadPdf(*file_path)
+	case "csv":
+		read_reports.ReadCsv(*file_path)
 	default:
 		fmt.Println("invalid file type")
 	}

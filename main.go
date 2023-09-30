@@ -13,10 +13,9 @@ func main() {
 	fmt.Println("filepath : ", *file_path)
 	fmt.Println("filetype : ", *file_type)
 
-	read_pdf.ReadPdf(*file_path)
 	switch *file_type {
 	case "pdf":
-		fmt.Println("pdf type")
+		read_pdf.ReadPdf(*file_path)
 	default:
 		fmt.Println("invalid file type")
 	}

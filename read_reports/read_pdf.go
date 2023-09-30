@@ -1,4 +1,4 @@
-package read_pdf
+package read_reports
 
 import (
 	"fmt"

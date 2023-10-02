@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"github.com/yadneshk/fin_tracker/database"
 )
 
 func ReadCsv(path string) {
@@ -22,5 +23,5 @@ func ReadCsv(path string) {
 	for _, record := range records {
 		fmt.Println(record)
 	}
-
+	database.InsertJSONData()
 }

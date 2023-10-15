@@ -20,8 +20,5 @@ func ReadCsv(path string) {
 	if err != nil {
 		fmt.Println("Error reading file %s", path)
 	}
-	for _, record := range records {
-		fmt.Println(record)
-	}
-	database.InsertJSONData()
+	database.InsertExpenses(records)
 }

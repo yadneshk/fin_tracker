@@ -3,15 +3,42 @@ package database
 import (
 	"fmt"
     "log"
+    "time"
 	"database/sql"
+    "strings"
 	// "encoding/json"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func execDatabaseQuery(query string, dbName string) {
+func convertToMySQLData(expense []string) ([]string, error) {
+
+    exp := make([]string, 4)
+
+	// Parse the input date
+	parsedDate, err := time.Parse("02-01-2006", expense[0])
+	if err != nil {
+		return []string{}, err
+	}
+
+	// Format it as MySQL date
+	exp[0] = parsedDate.Format("2006-01-02")
+
+    exp[1] = expense[2]
+
+    exp[2] = strings.Trim(expense[3], " ")
+
+    exp[3] = strings.Trim(expense[4], " ")
+
+
+	return exp, nil
+}
+
+func InsertExpenses(expenses [][]string) {
+    // Replace these with your MySQL database credentials
     dbUser := "root"
     dbPass := "my-secret-pw"
-    dbHost := "127.0.0.1"
+    dbName := "fin_tracker"
+    dbHost := "localhost" // or the address of your MySQL server
     dbPort := "3306"
 
     // Create a connection string
@@ -22,64 +49,60 @@ func execDatabaseQuery(query string, dbName string) {
     if err != nil {
         log.Fatal(err)
     }
-    log.Println("MySQL database opened!")
     defer db.Close()
 
     // Check if the database connection is working
     err = db.Ping()
     if err != nil {
-        if err.Error() == fmt.Sprintf("Error 1049 (42000): Unknown database '%s'", dbName) {
-            connectionString = fmt.Sprintf("%s:%s@tcp(%s:%s)/", dbUser, dbPass, dbHost, dbPort)
-            db, err = sql.Open("mysql", connectionString)
-        } else {
+        log.Fatal(err)
+    }
+    fmt.Println("Connected to MySQL database!")
+
+    // Insert each element of the string array into the database
+    for _, value := range expenses {
+
+        expense, err := convertToMySQLData(value)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        err = insertValue(db, expense)
+
+        if err != nil {
             log.Fatal(err)
         }
     }
-    log.Println("Connected to MySQL database!")
 
-    _, err = db.Exec(query)
+    fmt.Println("String array inserted successfully!")
+}
+
+func newNullString(s string) sql.NullString {
+    if len(s) == 0 {
+        return sql.NullString{}
+    }
+    return sql.NullString{
+         String: s,
+         Valid: true,
+    }
+}
+
+func insertValue(db *sql.DB, values []string) error {
+
+    // Define your SQL insert statement
+    insertStatement := "INSERT INTO expenses (txn_date, particulars, debit, credit) VALUES (?, ?, ?, ?)"
+
+    // Prepare the statement
+    stmt, err := db.Prepare(insertStatement)
     if err != nil {
-        log.Fatal(err)
+        return err
+    }
+    defer stmt.Close()
+
+    // Execute the statement with the value
+    _, err = stmt.Exec(values[0],values[1],newNullString(values[2]),newNullString(values[3]))
+    if err != nil {
+        return err
     }
 
-    log.Println("Query created successfully!\n")
-}
-
-func prepareDatabase() {
-    // Create a new database
-    dbName := "fin_tracker"
-    createDBStatement := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dbName)
-    execDatabaseQuery(createDBStatement, dbName)
-    log.Printf("Database '%s' created successfully!\n", dbName)
-
-    // Create a new database
-    tableName := "expenses"
-    createTableStatement := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (txn_id int primary key auto_increment, txn_date date, particulars varchar(255), debit float(2), credit float(2))", tableName)
-    execDatabaseQuery(createTableStatement, dbName)
-    log.Printf("Table '%s' created successfully!\n", tableName)
-
-}
-
-
-func InsertJSONData() {
-    prepareDatabase()
-
-	// // Define your SQL insert statement
-	// insertStatement := "INSERT INTO your_table_name (json_column) VALUES (?)"
-
-	// // Prepare the statement
-	// stmt, err := db.Prepare(insertStatement)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer stmt.Close()
-
-    // // Execute the statement with the JSON data string
-    // _, err = stmt.Exec(string(jsonData))
-    // if err != nil {
-    //     return err
-    // }
-
-    // return nil
-	
+    return nil
 }
